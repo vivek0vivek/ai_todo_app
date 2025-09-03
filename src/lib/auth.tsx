@@ -32,13 +32,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const initAuth = async () => {
       try {
-        const { auth, googleProvider } = await import('./firebase');
-        if (!auth) {
-          setLoading(false);
-          return;
-        }
-
+        const { getAuth } = await import('./firebase');
         const { onAuthStateChanged } = await import('firebase/auth');
+        
+        console.log('Initializing auth listener...');
+        const auth = await getAuth();
+        
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
           if (firebaseUser) {
             setUser({
@@ -53,6 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setLoading(false);
         });
 
+        console.log('Auth listener initialized');
         return unsubscribe;
       } catch (error) {
         console.error('Failed to initialize auth:', error);
@@ -68,21 +68,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
-      const { auth, googleProvider } = await import('./firebase');
+      const { getAuth, getGoogleProvider } = await import('./firebase');
       const { signInWithPopup } = await import('firebase/auth');
       
-      if (!auth || !googleProvider) {
-        console.error('Firebase auth not initialized');
-        return;
-      }
+      console.log('Getting Firebase auth services...');
+      const auth = await getAuth();
+      const googleProvider = await getGoogleProvider();
       
+      console.log('Firebase services ready, attempting sign in...');
       const result = await signInWithPopup(auth, googleProvider);
+      
       setUser({
         uid: result.user.uid,
         email: result.user.email || '',
         displayName: result.user.displayName || '',
         photoURL: result.user.photoURL || undefined,
       });
+      
+      console.log('Sign in successful');
     } catch (error) {
       console.error('Error signing in with Google:', error);
       throw error;
@@ -91,14 +94,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      const { auth } = await import('./firebase');
+      const { getAuth } = await import('./firebase');
       const { signOut: firebaseSignOut } = await import('firebase/auth');
       
-      if (!auth) {
-        console.error('Firebase auth not initialized');
-        return;
-      }
-      
+      const auth = await getAuth();
       await firebaseSignOut(auth);
       setUser(null);
     } catch (error) {
