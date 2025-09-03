@@ -1,9 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  swcMinify: false,
-  compiler: {
-    // Disable SWC and use Babel
-  },
   env: {
     NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -16,10 +12,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Disable static optimization to prevent build issues with Firebase
-  trailingSlash: false,
-  generateBuildId: () => 'build',
-  output: 'standalone',
   experimental: {
     serverComponentsExternalPackages: ['firebase-admin', 'firebase']
   }
