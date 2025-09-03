@@ -1,13 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  User as FirebaseUser,
-  signInWithPopup, 
-  signOut as firebaseSignOut,
-  onAuthStateChanged 
-} from 'firebase/auth';
-import { auth, googleProvider } from './firebase';
 import { User } from '@/types';
 
 interface AuthContextType {
@@ -27,43 +20,69 @@ export const useAuth = () => {
   return context;
 };
 
-const mapFirebaseUser = (firebaseUser: FirebaseUser): User => ({
-  uid: firebaseUser.uid,
-  email: firebaseUser.email || '',
-  displayName: firebaseUser.displayName || '',
-  photoURL: firebaseUser.photoURL || undefined,
-});
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth) {
+    if (typeof window === 'undefined') {
       setLoading(false);
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(mapFirebaseUser(firebaseUser));
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
+    const initAuth = async () => {
+      try {
+        const { auth, googleProvider } = await import('./firebase');
+        if (!auth) {
+          setLoading(false);
+          return;
+        }
 
-    return unsubscribe;
+        const { onAuthStateChanged } = await import('firebase/auth');
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+          if (firebaseUser) {
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || '',
+              displayName: firebaseUser.displayName || '',
+              photoURL: firebaseUser.photoURL || undefined,
+            });
+          } else {
+            setUser(null);
+          }
+          setLoading(false);
+        });
+
+        return unsubscribe;
+      } catch (error) {
+        console.error('Failed to initialize auth:', error);
+        setLoading(false);
+      }
+    };
+
+    const cleanup = initAuth();
+    return () => {
+      cleanup?.then(unsubscribe => unsubscribe?.());
+    };
   }, []);
 
   const signInWithGoogle = async () => {
-    if (!auth || !googleProvider) {
-      console.error('Firebase auth not initialized');
-      return;
-    }
     try {
+      const { auth, googleProvider } = await import('./firebase');
+      const { signInWithPopup } = await import('firebase/auth');
+      
+      if (!auth || !googleProvider) {
+        console.error('Firebase auth not initialized');
+        return;
+      }
+      
       const result = await signInWithPopup(auth, googleProvider);
-      setUser(mapFirebaseUser(result.user));
+      setUser({
+        uid: result.user.uid,
+        email: result.user.email || '',
+        displayName: result.user.displayName || '',
+        photoURL: result.user.photoURL || undefined,
+      });
     } catch (error) {
       console.error('Error signing in with Google:', error);
       throw error;
@@ -71,11 +90,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    if (!auth) {
-      console.error('Firebase auth not initialized');
-      return;
-    }
     try {
+      const { auth } = await import('./firebase');
+      const { signOut: firebaseSignOut } = await import('firebase/auth');
+      
+      if (!auth) {
+        console.error('Firebase auth not initialized');
+        return;
+      }
+      
       await firebaseSignOut(auth);
       setUser(null);
     } catch (error) {
