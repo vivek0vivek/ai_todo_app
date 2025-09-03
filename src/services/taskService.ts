@@ -23,7 +23,15 @@ export class TaskService {
   static async getTasks(userId: string): Promise<Task[]> {
     if (!userId) return this.getLocalTasks();
     
+    // Check if running in browser environment
+    if (typeof window === 'undefined') return [];
+    
     try {
+      if (!db) {
+        console.warn('Firestore not initialized, using localStorage');
+        return this.getLocalTasks();
+      }
+      
       const tasksRef = collection(db, TASKS_COLLECTION);
       const q = query(
         tasksRef,
@@ -40,7 +48,7 @@ export class TaskService {
         deadline: doc.data().deadline?.toDate()
       })) as Task[];
     } catch (error) {
-      console.error('Error getting tasks:', error);
+      console.error('Error getting tasks from Firestore, falling back to localStorage:', error);
       return this.getLocalTasks();
     }
   }
@@ -48,7 +56,15 @@ export class TaskService {
   static async addTask(userId: string, task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task | null> {
     if (!userId) return this.addLocalTask(task);
     
+    // Check if running in browser environment
+    if (typeof window === 'undefined') return this.addLocalTask(task);
+    
     try {
+      if (!db) {
+        console.warn('Firestore not initialized, using localStorage');
+        return this.addLocalTask(task);
+      }
+      
       const tasksRef = collection(db, TASKS_COLLECTION);
       const newTask = {
         ...task,
@@ -66,7 +82,7 @@ export class TaskService {
         updatedAt: new Date()
       };
     } catch (error) {
-      console.error('Error adding task:', error);
+      console.error('Error adding task to Firestore, falling back to localStorage:', error);
       return this.addLocalTask(task);
     }
   }
@@ -74,7 +90,15 @@ export class TaskService {
   static async updateTask(userId: string, taskId: string, updates: Partial<Task>): Promise<Task | null> {
     if (!userId) return this.updateLocalTask(taskId, updates);
     
+    // Check if running in browser environment
+    if (typeof window === 'undefined') return this.updateLocalTask(taskId, updates);
+    
     try {
+      if (!db) {
+        console.warn('Firestore not initialized, using localStorage');
+        return this.updateLocalTask(taskId, updates);
+      }
+      
       const taskRef = doc(db, TASKS_COLLECTION, taskId);
       const updateData = {
         ...updates,
@@ -85,7 +109,7 @@ export class TaskService {
       await updateDoc(taskRef, updateData);
       return { ...updates, id: taskId } as Task;
     } catch (error) {
-      console.error('Error updating task:', error);
+      console.error('Error updating task in Firestore, falling back to localStorage:', error);
       return this.updateLocalTask(taskId, updates);
     }
   }
@@ -93,12 +117,20 @@ export class TaskService {
   static async deleteTask(userId: string, taskId: string): Promise<boolean> {
     if (!userId) return this.deleteLocalTask(taskId);
     
+    // Check if running in browser environment
+    if (typeof window === 'undefined') return this.deleteLocalTask(taskId);
+    
     try {
+      if (!db) {
+        console.warn('Firestore not initialized, using localStorage');
+        return this.deleteLocalTask(taskId);
+      }
+      
       const taskRef = doc(db, TASKS_COLLECTION, taskId);
       await deleteDoc(taskRef);
       return true;
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error('Error deleting task from Firestore, falling back to localStorage:', error);
       return this.deleteLocalTask(taskId);
     }
   }
@@ -198,25 +230,35 @@ export class TaskService {
 
   // Real-time subscription for authenticated users
   static subscribeToTasks(userId: string, callback: (tasks: Task[]) => void) {
-    if (!userId) return () => {};
+    if (!userId || typeof window === 'undefined') return () => {};
 
-    const tasksRef = collection(db, TASKS_COLLECTION);
-    const q = query(
-      tasksRef,
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    );
-
-    return onSnapshot(q, (snapshot) => {
-      const tasks = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-        deadline: doc.data().deadline?.toDate()
-      })) as Task[];
+    try {
+      if (!db) {
+        console.warn('Firestore not initialized, subscription not available');
+        return () => {};
+      }
       
-      callback(tasks);
-    });
+      const tasksRef = collection(db, TASKS_COLLECTION);
+      const q = query(
+        tasksRef,
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc')
+      );
+
+      return onSnapshot(q, (snapshot) => {
+        const tasks = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate(),
+          updatedAt: doc.data().updatedAt?.toDate(),
+          deadline: doc.data().deadline?.toDate()
+        })) as Task[];
+        
+        callback(tasks);
+      });
+    } catch (error) {
+      console.error('Error setting up Firestore subscription:', error);
+      return () => {};
+    }
   }
 }
