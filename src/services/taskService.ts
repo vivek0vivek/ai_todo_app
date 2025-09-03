@@ -1,16 +1,4 @@
-import {
-  collection,
-  doc,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  Timestamp
-} from 'firebase/firestore';
+// Dynamic imports for Firestore to avoid build issues
 import { db } from '@/lib/firebase';
 import { Task, TaskStats } from '@/types';
 
@@ -31,6 +19,8 @@ export class TaskService {
         console.warn('Firestore not initialized, using localStorage');
         return this.getLocalTasks();
       }
+      
+      const { collection, query, where, orderBy, getDocs } = await import('firebase/firestore');
       
       const tasksRef = collection(db, TASKS_COLLECTION);
       const q = query(
@@ -64,6 +54,8 @@ export class TaskService {
         console.warn('Firestore not initialized, using localStorage');
         return this.addLocalTask(task);
       }
+      
+      const { collection, addDoc, Timestamp } = await import('firebase/firestore');
       
       const tasksRef = collection(db, TASKS_COLLECTION);
       const newTask = {
@@ -99,6 +91,8 @@ export class TaskService {
         return this.updateLocalTask(taskId, updates);
       }
       
+      const { doc, updateDoc, Timestamp } = await import('firebase/firestore');
+      
       const taskRef = doc(db, TASKS_COLLECTION, taskId);
       const updateData = {
         ...updates,
@@ -125,6 +119,8 @@ export class TaskService {
         console.warn('Firestore not initialized, using localStorage');
         return this.deleteLocalTask(taskId);
       }
+      
+      const { doc, deleteDoc } = await import('firebase/firestore');
       
       const taskRef = doc(db, TASKS_COLLECTION, taskId);
       await deleteDoc(taskRef);
@@ -229,7 +225,7 @@ export class TaskService {
   }
 
   // Real-time subscription for authenticated users
-  static subscribeToTasks(userId: string, callback: (tasks: Task[]) => void) {
+  static async subscribeToTasks(userId: string, callback: (tasks: Task[]) => void): Promise<() => void> {
     if (!userId || typeof window === 'undefined') return () => {};
 
     try {
@@ -237,6 +233,8 @@ export class TaskService {
         console.warn('Firestore not initialized, subscription not available');
         return () => {};
       }
+      
+      const { collection, query, where, orderBy, onSnapshot } = await import('firebase/firestore');
       
       const tasksRef = collection(db, TASKS_COLLECTION);
       const q = query(

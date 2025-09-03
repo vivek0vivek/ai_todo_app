@@ -12,7 +12,13 @@ const nextConfig = {
     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
     NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-  }
+  },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  // Skip static generation that might be causing issues
+  trailingSlash: false,
+  generateBuildId: () => 'build'
 }
 
 module.exports = nextConfig

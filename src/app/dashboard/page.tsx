@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+
+// Force dynamic rendering for Firebase-dependent pages
+export const dynamic = 'force-dynamic';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { Task, TaskStats } from '@/types';

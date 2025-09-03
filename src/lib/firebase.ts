@@ -1,7 +1,3 @@
-import { initializeApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
-
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -11,21 +7,31 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase only if all required config is present
-let app: FirebaseApp | undefined;
-let auth: Auth | undefined;
-let googleProvider: GoogleAuthProvider | undefined;
-let db: Firestore | undefined;
+// Only initialize in browser environment
+let app: any = undefined;
+let auth: any = undefined;
+let googleProvider: any = undefined;
+let db: any = undefined;
 
-try {
-  if (typeof window !== 'undefined' && firebaseConfig.apiKey) {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    googleProvider = new GoogleAuthProvider();
-    db = getFirestore(app);
-  }
-} catch (error) {
-  console.error('Firebase initialization error:', error);
+if (typeof window !== 'undefined' && firebaseConfig.apiKey) {
+  const initFirebase = async () => {
+    try {
+      const { initializeApp } = await import('firebase/app');
+      const { getAuth, GoogleAuthProvider } = await import('firebase/auth');
+      const { getFirestore } = await import('firebase/firestore');
+
+      if (!app) {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        googleProvider = new GoogleAuthProvider();
+        db = getFirestore(app);
+      }
+    } catch (error) {
+      console.error('Firebase initialization error:', error);
+    }
+  };
+  
+  initFirebase();
 }
 
 export { auth, googleProvider, db };

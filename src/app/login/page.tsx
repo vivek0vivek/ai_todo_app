@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
+// Force dynamic rendering for Firebase-dependent pages
+export const dynamic = 'force-dynamic';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { CheckCircle2, LogIn, Loader2, Sparkles } from 'lucide-react';
