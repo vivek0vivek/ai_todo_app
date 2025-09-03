@@ -23,7 +23,7 @@ export default function TaskInput({ onTaskAdded }: TaskInputProps) {
     setIsLoading(true);
     
     try {
-      let taskData = {
+      let taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'> = {
         title: input.trim(),
         description: '',
         completed: false,
@@ -40,7 +40,7 @@ export default function TaskInput({ onTaskAdded }: TaskInputProps) {
               ...taskData,
               title: parsedTask.title,
               priority: parsedTask.priority,
-              tags: parsedTask.tags || [],
+              tags: parsedTask.tags,
             };
             
             if (parsedTask.deadline) {
