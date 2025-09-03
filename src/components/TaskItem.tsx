@@ -11,6 +11,7 @@ import {
   X,
   Calendar 
 } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 import { Task } from '@/types';
 import { TaskService } from '@/services/taskService';
 import { cn } from '@/utils/cn';
@@ -22,6 +23,7 @@ interface TaskItemProps {
 }
 
 export default function TaskItem({ task, onTaskUpdated, onTaskDeleted }: TaskItemProps) {
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
 
@@ -40,22 +42,22 @@ export default function TaskItem({ task, onTaskUpdated, onTaskDeleted }: TaskIte
 
   const isOverdue = task.deadline && new Date(task.deadline) < new Date() && !task.completed;
 
-  const handleToggleComplete = () => {
-    const updatedTask = TaskService.updateTask(task.id, {
+  const handleToggleComplete = async () => {
+    const updatedTask = await TaskService.updateTask(user?.uid || '', task.id, {
       completed: !task.completed,
     });
     if (updatedTask) {
-      onTaskUpdated(updatedTask);
+      onTaskUpdated({ ...task, ...updatedTask });
     }
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (editTitle.trim() && editTitle !== task.title) {
-      const updatedTask = TaskService.updateTask(task.id, {
+      const updatedTask = await TaskService.updateTask(user?.uid || '', task.id, {
         title: editTitle.trim(),
       });
       if (updatedTask) {
-        onTaskUpdated(updatedTask);
+        onTaskUpdated({ ...task, ...updatedTask });
       }
     }
     setIsEditing(false);
@@ -67,8 +69,9 @@ export default function TaskItem({ task, onTaskUpdated, onTaskDeleted }: TaskIte
     setEditTitle(task.title);
   };
 
-  const handleDelete = () => {
-    if (TaskService.deleteTask(task.id)) {
+  const handleDelete = async () => {
+    const success = await TaskService.deleteTask(user?.uid || '', task.id);
+    if (success) {
       onTaskDeleted(task.id);
     }
   };

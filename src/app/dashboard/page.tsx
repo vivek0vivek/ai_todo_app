@@ -41,13 +41,15 @@ export default function DashboardPage() {
     updateStats();
   }, [tasks]);
 
-  const loadTasks = () => {
-    const loadedTasks = TaskService.getTasks();
-    setTasks(loadedTasks);
+  const loadTasks = async () => {
+    if (user?.uid) {
+      const loadedTasks = await TaskService.getTasks(user.uid);
+      setTasks(loadedTasks);
+    }
   };
 
   const updateStats = () => {
-    const newStats = TaskService.getStats();
+    const newStats = TaskService.getStats(tasks);
     setStats(newStats);
   };
 

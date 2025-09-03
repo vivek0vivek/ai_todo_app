@@ -8,6 +8,7 @@ export interface Task {
   deadline?: Date;
   priority: 'low' | 'medium' | 'high';
   tags?: string[];
+  userId?: string;
 }
 
 export interface User {

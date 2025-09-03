@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Plus, Sparkles, Loader2 } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 import { aiService } from '@/services/aiService';
 import { TaskService } from '@/services/taskService';
 import { Task } from '@/types';
@@ -12,6 +13,7 @@ interface TaskInputProps {
 }
 
 export default function TaskInput({ onTaskAdded }: TaskInputProps) {
+  const { user } = useAuth();
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isAiEnabled, setIsAiEnabled] = useState(true);
@@ -52,9 +54,11 @@ export default function TaskInput({ onTaskAdded }: TaskInputProps) {
         }
       }
 
-      const newTask = TaskService.addTask(taskData);
-      onTaskAdded(newTask);
-      setInput('');
+      const newTask = await TaskService.addTask(user?.uid || '', taskData);
+      if (newTask) {
+        onTaskAdded(newTask);
+        setInput('');
+      }
     } catch (error) {
       console.error('Error adding task:', error);
     } finally {
