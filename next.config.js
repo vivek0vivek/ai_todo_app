@@ -16,9 +16,13 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Skip static generation that might be causing issues
+  // Disable static optimization to prevent build issues with Firebase
   trailingSlash: false,
-  generateBuildId: () => 'build'
+  generateBuildId: () => 'build',
+  output: 'standalone',
+  experimental: {
+    serverComponentsExternalPackages: ['firebase-admin', 'firebase']
+  }
 }
 
 module.exports = nextConfig
