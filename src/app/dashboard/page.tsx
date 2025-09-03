@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { Task, TaskStats } from '@/types';
@@ -25,6 +25,18 @@ export default function DashboardPage() {
     completedThisWeek: 0,
   });
 
+  const loadTasks = useCallback(async () => {
+    if (user?.uid) {
+      const loadedTasks = await TaskService.getTasks(user.uid);
+      setTasks(loadedTasks);
+    }
+  }, [user?.uid]);
+
+  const updateStats = useCallback(() => {
+    const newStats = TaskService.getStats(tasks);
+    setStats(newStats);
+  }, [tasks]);
+
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
@@ -35,23 +47,11 @@ export default function DashboardPage() {
     if (user) {
       loadTasks();
     }
-  }, [user]);
+  }, [user, loadTasks]);
 
   useEffect(() => {
     updateStats();
-  }, [tasks]);
-
-  const loadTasks = async () => {
-    if (user?.uid) {
-      const loadedTasks = await TaskService.getTasks(user.uid);
-      setTasks(loadedTasks);
-    }
-  };
-
-  const updateStats = () => {
-    const newStats = TaskService.getStats(tasks);
-    setStats(newStats);
-  };
+  }, [tasks, updateStats]);
 
   const handleTaskAdded = (task: Task) => {
     setTasks(prev => [task, ...prev]);
