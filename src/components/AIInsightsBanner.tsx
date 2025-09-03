@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth';
 import { AIInsight } from '@/types';
 import { aiService } from '@/services/aiService';
 import { TaskService } from '@/services/taskService';
@@ -15,18 +16,23 @@ import {
 import { cn } from '@/utils/cn';
 
 export default function AIInsightsBanner() {
+  const { user } = useAuth();
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [dismissedInsights, setDismissedInsights] = useState<string[]>([]);
 
   useEffect(() => {
-    generateInsights();
-  }, []);
+    if (user) {
+      generateInsights();
+    }
+  }, [user]);
 
   const generateInsights = async () => {
+    if (!user?.uid) return;
+    
     setIsLoading(true);
     try {
-      const tasks = TaskService.getTasks();
+      const tasks = await TaskService.getTasks(user.uid);
       const newInsights = await aiService.generateDailyInsights(tasks);
       setInsights(newInsights);
     } catch (error) {

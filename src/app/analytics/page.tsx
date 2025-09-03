@@ -21,9 +21,15 @@ export default function AnalyticsPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
+    const loadTasks = async () => {
+      if (user?.uid) {
+        const loadedTasks = await TaskService.getTasks(user.uid);
+        setTasks(loadedTasks);
+      }
+    };
+
     if (user) {
-      const loadedTasks = TaskService.getTasks();
-      setTasks(loadedTasks);
+      loadTasks();
     }
   }, [user]);
 
