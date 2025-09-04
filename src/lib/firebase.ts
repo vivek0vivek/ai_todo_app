@@ -1,11 +1,11 @@
-// Firebase configuration
+// Firebase configuration - temporarily hardcoded to fix env var issues
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyD6QwKTLIKdQ6b52HdFr7f_OiXglu29Hgc",
+  authDomain: "ai-todo-app-fe8a5.firebaseapp.com",
+  projectId: "ai-todo-app-fe8a5",
+  storageBucket: "ai-todo-app-fe8a5.firebasestorage.app",
+  messagingSenderId: "15709189569",
+  appId: "1:15709189569:web:96eee03b1f21a9c342eb40",
 };
 
 // Debug logging - make it impossible to miss
