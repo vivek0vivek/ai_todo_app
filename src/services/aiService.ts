@@ -12,13 +12,22 @@ class GeminiAIService implements AIService {
 
   private async initialize() {
     try {
-      if (process.env.GEMINI_API_KEY) {
-        this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      // Use client-side environment variable
+      const apiKey = typeof window !== 'undefined' 
+        ? process.env.NEXT_PUBLIC_GEMINI_API_KEY || 'AIzaSyBfOsE1qhRdidAyLOzb4AY1jM2VJ4Zvp0o' 
+        : null;
+        
+      if (apiKey) {
+        console.log('🤖 Initializing AI service with Gemini API...');
+        this.genAI = new GoogleGenerativeAI(apiKey);
         this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
         this.isInitialized = true;
+        console.log('✅ AI service initialized successfully!');
+      } else {
+        console.warn('⚠️ Gemini API key not found');
       }
     } catch (error) {
-      console.warn('Failed to initialize AI service:', error);
+      console.error('❌ Failed to initialize AI service:', error);
       this.isInitialized = false;
     }
   }

@@ -1,5 +1,5 @@
 // Dynamic imports for Firestore to avoid build issues
-import { db } from '@/lib/firebase';
+import { getFirebaseInstances } from '@/lib/firebase';
 import { Task, TaskStats } from '@/types';
 
 const TASKS_COLLECTION = 'tasks';
@@ -15,8 +15,10 @@ export class TaskService {
     if (typeof window === 'undefined') return [];
     
     try {
+      const { db } = await getFirebaseInstances();
+      
       if (!db) {
-        console.warn('Firestore not initialized, using localStorage');
+        console.warn('📦 Firestore not initialized, using localStorage');
         return this.getLocalTasks();
       }
       
@@ -50,8 +52,10 @@ export class TaskService {
     if (typeof window === 'undefined') return this.addLocalTask(task);
     
     try {
+      const { db } = await getFirebaseInstances();
+      
       if (!db) {
-        console.warn('Firestore not initialized, using localStorage');
+        console.warn('📦 Firestore not initialized, using localStorage');
         return this.addLocalTask(task);
       }
       
@@ -86,8 +90,10 @@ export class TaskService {
     if (typeof window === 'undefined') return this.updateLocalTask(taskId, updates);
     
     try {
+      const { db } = await getFirebaseInstances();
+      
       if (!db) {
-        console.warn('Firestore not initialized, using localStorage');
+        console.warn('📦 Firestore not initialized, using localStorage');
         return this.updateLocalTask(taskId, updates);
       }
       
@@ -115,8 +121,10 @@ export class TaskService {
     if (typeof window === 'undefined') return this.deleteLocalTask(taskId);
     
     try {
+      const { db } = await getFirebaseInstances();
+      
       if (!db) {
-        console.warn('Firestore not initialized, using localStorage');
+        console.warn('📦 Firestore not initialized, using localStorage');
         return this.deleteLocalTask(taskId);
       }
       
@@ -229,8 +237,10 @@ export class TaskService {
     if (!userId || typeof window === 'undefined') return () => {};
 
     try {
+      const { db } = await getFirebaseInstances();
+      
       if (!db) {
-        console.warn('Firestore not initialized, subscription not available');
+        console.warn('📦 Firestore not initialized, subscription not available');
         return () => {};
       }
       

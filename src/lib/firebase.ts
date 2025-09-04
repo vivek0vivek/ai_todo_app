@@ -25,34 +25,54 @@ if (typeof window !== 'undefined' && !firebaseConfig.apiKey) {
   }, 1000);
 }
 
-// Initialize Firebase - simple and direct approach
-let app: any;
-let auth: any;
-let db: any;
+// Initialize Firebase immediately
+let app: any = null;
+let auth: any = null;
+let db: any = null;
 
-if (typeof window !== 'undefined') {
-  // Only run on client side
-  console.log('Starting Firebase initialization...');
+// Initialize Firebase function
+const initializeFirebase = async () => {
+  if (app) return { app, auth, db }; // Already initialized
   
-  import('firebase/app').then(({ initializeApp }) => {
-    import('firebase/auth').then(({ getAuth }) => {
-      import('firebase/firestore').then(({ getFirestore }) => {
-        if (!app && firebaseConfig.apiKey) {
-          try {
-            console.log('Initializing Firebase with config...');
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            console.log('✅ Firebase initialized successfully!');
-          } catch (error) {
-            console.error('❌ Firebase initialization failed:', error);
-          }
-        }
-      });
-    });
-  }).catch(error => {
-    console.error('❌ Firebase import error:', error);
-  });
+  try {
+    console.log('🔥 Starting Firebase initialization...');
+    
+    const { initializeApp } = await import('firebase/app');
+    const { getAuth } = await import('firebase/auth');
+    const { getFirestore } = await import('firebase/firestore');
+    
+    if (!firebaseConfig.apiKey) {
+      throw new Error('Firebase API key not found');
+    }
+    
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    
+    console.log('✅ Firebase initialized successfully!');
+    console.log('Auth instance:', !!auth);
+    console.log('DB instance:', !!db);
+    
+    return { app, auth, db };
+  } catch (error) {
+    console.error('❌ Firebase initialization failed:', error);
+    throw error;
+  }
+};
+
+// Initialize on client side
+if (typeof window !== 'undefined') {
+  initializeFirebase().catch(console.error);
 }
 
+// Export function to get initialized Firebase instances
+export const getFirebaseInstances = async () => {
+  if (typeof window === 'undefined') {
+    throw new Error('Firebase can only be initialized on client side');
+  }
+  
+  return await initializeFirebase();
+};
+
+// Legacy exports for backward compatibility
 export { auth, db };

@@ -33,23 +33,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const initAuth = async () => {
       try {
-        const { auth } = await import('./firebase');
+        console.log('🔐 Initializing auth listener...');
+        
+        // Get Firebase instances
+        const { getFirebaseInstances } = await import('./firebase');
         const { onAuthStateChanged } = await import('firebase/auth');
         
-        console.log('Initializing auth listener...');
-        
-        // Wait for Firebase to initialize
-        let attempts = 0;
-        while (!auth && attempts < 10) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          attempts++;
-        }
+        const { auth } = await getFirebaseInstances();
         
         if (!auth) {
-          console.error('Firebase auth not available after waiting');
+          console.error('❌ Firebase auth not available');
           setLoading(false);
           return;
         }
+        
+        console.log('✅ Auth instance ready, setting up listener...');
         
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
           if (firebaseUser) {
@@ -81,8 +79,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithEmail = async (email: string, password: string) => {
     try {
-      const { auth } = await import('./firebase');
+      const { getFirebaseInstances } = await import('./firebase');
       const { signInWithEmailAndPassword } = await import('firebase/auth');
+      
+      const { auth } = await getFirebaseInstances();
       
       if (!auth) {
         throw new Error('Firebase not initialized');
@@ -104,8 +104,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUpWithEmail = async (email: string, password: string) => {
     try {
-      const { auth } = await import('./firebase');
+      const { getFirebaseInstances } = await import('./firebase');
       const { createUserWithEmailAndPassword } = await import('firebase/auth');
+      
+      const { auth } = await getFirebaseInstances();
       
       if (!auth) {
         throw new Error('Firebase not initialized');
@@ -127,8 +129,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      const { auth } = await import('./firebase');
+      const { getFirebaseInstances } = await import('./firebase');
       const { signOut: firebaseSignOut } = await import('firebase/auth');
+      
+      const { auth } = await getFirebaseInstances();
       
       if (!auth) {
         console.error('Firebase auth not ready');
