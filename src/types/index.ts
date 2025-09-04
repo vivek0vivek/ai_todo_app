@@ -1,3 +1,19 @@
+export interface SubNote {
+  id: string;
+  content: string;
+  completed: boolean;
+  type: 'text' | 'checklist' | 'numbered';
+  order: number;
+}
+
+export interface Attachment {
+  id: string;
+  name: string;
+  url: string;
+  type: 'image' | 'document' | 'link';
+  size?: number;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -9,6 +25,11 @@ export interface Task {
   priority: 'low' | 'medium' | 'high';
   tags?: string[];
   userId?: string;
+  subNotes?: SubNote[];
+  attachments?: Attachment[];
+  category?: string;
+  color?: string;
+  folderId?: string;
 }
 
 export interface User {
@@ -40,6 +61,17 @@ export interface ParsedTaskInput {
   deadline?: Date;
   priority: 'low' | 'medium' | 'high';
   tags?: string[];
+}
+
+export interface Folder {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
+  userId: string;
+  createdAt: Date;
+  storageUsed: number;
+  storageLimit: number;
 }
 
 export interface AIService {
