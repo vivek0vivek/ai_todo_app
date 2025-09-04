@@ -28,42 +28,31 @@ if (typeof window !== 'undefined' && !firebaseConfig.apiKey) {
 // Initialize Firebase - simple and direct approach
 let app: any;
 let auth: any;
-let googleProvider: any;
 let db: any;
 
 if (typeof window !== 'undefined') {
   // Only run on client side
-  console.error('🔥 STARTING Firebase initialization on client...');
+  console.log('Starting Firebase initialization...');
   
   import('firebase/app').then(({ initializeApp }) => {
-    import('firebase/auth').then(({ getAuth, GoogleAuthProvider }) => {
+    import('firebase/auth').then(({ getAuth }) => {
       import('firebase/firestore').then(({ getFirestore }) => {
         if (!app && firebaseConfig.apiKey) {
           try {
-            console.error('🔥 INITIALIZING Firebase with config:', {
-              hasApiKey: !!firebaseConfig.apiKey,
-              authDomain: firebaseConfig.authDomain,
-              projectId: firebaseConfig.projectId
-            });
+            console.log('Initializing Firebase with config...');
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
-            googleProvider = new GoogleAuthProvider();
             db = getFirestore(app);
-            console.error('🔥 ✅ Firebase initialized successfully - auth and provider ready!');
+            console.log('✅ Firebase initialized successfully!');
           } catch (error) {
-            console.error('🔥 ❌ Firebase app initialization failed:', error);
+            console.error('❌ Firebase initialization failed:', error);
           }
-        } else {
-          console.error('🔥 ❌ Firebase config missing or app already initialized:', {
-            hasApp: !!app,
-            hasApiKey: !!firebaseConfig.apiKey
-          });
         }
       });
     });
   }).catch(error => {
-    console.error('🔥 ❌ Firebase module import error:', error);
+    console.error('❌ Firebase import error:', error);
   });
 }
 
-export { auth, googleProvider, db };
+export { auth, db };

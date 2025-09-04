@@ -6,7 +6,8 @@ import { User } from '@/types';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -78,33 +79,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithEmail = async (email: string, password: string) => {
     try {
-      const { auth, googleProvider } = await import('./firebase');
-      const { signInWithPopup } = await import('firebase/auth');
+      const { auth } = await import('./firebase');
+      const { signInWithEmailAndPassword } = await import('firebase/auth');
       
-      console.error('🔥 CHECKING Firebase services for sign-in...');
-      console.error('🔥 Auth object:', auth);
-      console.error('🔥 GoogleProvider object:', googleProvider);
-      
-      if (!auth || !googleProvider) {
-        console.error('🔥 ❌ Firebase auth services not ready - auth:', !!auth, 'provider:', !!googleProvider);
+      if (!auth) {
         throw new Error('Firebase not initialized');
       }
       
-      console.error('🔥 ✅ Firebase services ready, attempting sign in...');
-      const result = await signInWithPopup(auth, googleProvider);
+      const result = await signInWithEmailAndPassword(auth, email, password);
       
       setUser({
         uid: result.user.uid,
         email: result.user.email || '',
-        displayName: result.user.displayName || '',
+        displayName: result.user.displayName || result.user.email?.split('@')[0] || '',
         photoURL: result.user.photoURL || undefined,
       });
-      
-      console.log('Sign in successful');
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error('Error signing in with email:', error);
+      throw error;
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    try {
+      const { auth } = await import('./firebase');
+      const { createUserWithEmailAndPassword } = await import('firebase/auth');
+      
+      if (!auth) {
+        throw new Error('Firebase not initialized');
+      }
+      
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      
+      setUser({
+        uid: result.user.uid,
+        email: result.user.email || '',
+        displayName: result.user.email?.split('@')[0] || '',
+        photoURL: result.user.photoURL || undefined,
+      });
+    } catch (error) {
+      console.error('Error signing up with email:', error);
       throw error;
     }
   };
@@ -130,7 +146,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value: AuthContextType = {
     user,
     loading,
-    signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
     signOut,
   };
 
