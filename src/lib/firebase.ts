@@ -1,11 +1,11 @@
-// Firebase configuration - temporarily hardcoded to fix env var issues
+// Firebase configuration - correct credentials from Firebase Console
 const firebaseConfig = {
-  apiKey: "AIzaSyD6QwKTLIKdQ6b52HdFr7f_OiXglu29Hgc",
-  authDomain: "ai-todo-app-fe8a5.firebaseapp.com",
-  projectId: "ai-todo-app-fe8a5",
-  storageBucket: "ai-todo-app-fe8a5.firebasestorage.app",
-  messagingSenderId: "15709189569",
-  appId: "1:15709189569:web:96eee03b1f21a9c342eb40",
+  apiKey: "AIzaSyAXkKnkC7564grnwCBEhm1doIaEqEOqZkY",
+  authDomain: "ai-todo-fresh.firebaseapp.com",
+  projectId: "ai-todo-fresh",
+  storageBucket: "ai-todo-fresh.firebasestorage.app",
+  messagingSenderId: "196781214933",
+  appId: "1:196781214933:web:0ed9f7db99f5717c90a65c",
 };
 
 // Debug logging - make it impossible to miss
