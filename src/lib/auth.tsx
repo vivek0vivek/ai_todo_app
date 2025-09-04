@@ -83,14 +83,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { auth, googleProvider } = await import('./firebase');
       const { signInWithPopup } = await import('firebase/auth');
       
-      console.log('Checking Firebase services...');
+      console.error('🔥 CHECKING Firebase services for sign-in...');
+      console.error('🔥 Auth object:', auth);
+      console.error('🔥 GoogleProvider object:', googleProvider);
       
       if (!auth || !googleProvider) {
-        console.error('Firebase auth services not ready');
+        console.error('🔥 ❌ Firebase auth services not ready - auth:', !!auth, 'provider:', !!googleProvider);
         throw new Error('Firebase not initialized');
       }
       
-      console.log('Firebase services ready, attempting sign in...');
+      console.error('🔥 ✅ Firebase services ready, attempting sign in...');
       const result = await signInWithPopup(auth, googleProvider);
       
       setUser({
