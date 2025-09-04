@@ -32,11 +32,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const initAuth = async () => {
       try {
-        const { getAuth } = await import('./firebase');
+        const { auth } = await import('./firebase');
         const { onAuthStateChanged } = await import('firebase/auth');
         
         console.log('Initializing auth listener...');
-        const auth = await getAuth();
+        
+        // Wait for Firebase to initialize
+        let attempts = 0;
+        while (!auth && attempts < 10) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          attempts++;
+        }
+        
+        if (!auth) {
+          console.error('Firebase auth not available after waiting');
+          setLoading(false);
+          return;
+        }
         
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
           if (firebaseUser) {
@@ -68,12 +80,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
-      const { getAuth, getGoogleProvider } = await import('./firebase');
+      const { auth, googleProvider } = await import('./firebase');
       const { signInWithPopup } = await import('firebase/auth');
       
-      console.log('Getting Firebase auth services...');
-      const auth = await getAuth();
-      const googleProvider = await getGoogleProvider();
+      console.log('Checking Firebase services...');
+      
+      if (!auth || !googleProvider) {
+        console.error('Firebase auth services not ready');
+        throw new Error('Firebase not initialized');
+      }
       
       console.log('Firebase services ready, attempting sign in...');
       const result = await signInWithPopup(auth, googleProvider);
@@ -94,10 +109,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      const { getAuth } = await import('./firebase');
+      const { auth } = await import('./firebase');
       const { signOut: firebaseSignOut } = await import('firebase/auth');
       
-      const auth = await getAuth();
+      if (!auth) {
+        console.error('Firebase auth not ready');
+        return;
+      }
+      
       await firebaseSignOut(auth);
       setUser(null);
     } catch (error) {
